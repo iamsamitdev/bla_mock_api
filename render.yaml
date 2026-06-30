@@ -5,8 +5,8 @@ services:
     name: bla-mock-api
     runtime: node
     plan: free
-    buildCommand: corepack pnpm install && corepack pnpm migrate -- --seed
-    startCommand: corepack pnpm start
+    buildCommand: npm install -g pnpm@9 && pnpm install && pnpm migrate -- --seed
+    startCommand: pnpm start
     envVars:
       - key: NODE_VERSION
         value: '22.12.0'
