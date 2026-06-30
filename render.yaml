@@ -5,9 +5,11 @@ services:
     name: bla-mock-api
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install && pnpm migrate -- --seed
-    startCommand: pnpm start
+    buildCommand: corepack pnpm install && corepack pnpm migrate -- --seed
+    startCommand: corepack pnpm start
     envVars:
+      - key: NODE_VERSION
+        value: '22.12.0'
       - key: PGSSL
         value: 'true'
       - key: DATABASE_URL
