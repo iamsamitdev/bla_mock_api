@@ -1,0 +1,20 @@
+# PostgreSQL สำหรับรันในเครื่อง (ทางเลือก) — ใช้ตอนพัฒนา/สอน
+# เริ่ม:  docker compose up -d
+# หยุด:  docker compose down
+# ลบข้อมูล: docker compose down -v
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bla_policy_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bla_policy
+    ports:
+      - '5432:5432'
+    volumes:
+      - bla_pgdata:/var/lib/postgresql/data
+
+volumes:
+  bla_pgdata:

@@ -1,0 +1,28 @@
+{
+  "name": "bla-mock-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock REST API + PostgreSQL สำหรับ Workshop Advanced Flutter 2026 - BLA Policy Companion (Day 2)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/migrate.js",
+    "seed": "node src/migrate.js --seed",
+    "reset": "node src/migrate.js --reset --seed"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.3"
+  }
+}

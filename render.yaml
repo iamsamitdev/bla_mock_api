@@ -1,0 +1,22 @@
+# Render Blueprint — สร้าง Web Service (Node) + PostgreSQL พร้อมกัน
+# วิธีใช้: push โปรเจกต์ขึ้น GitHub แล้วที่ Render เลือก "New +" → "Blueprint" → ชี้มาที่ repo นี้
+services:
+  - type: web
+    name: bla-mock-api
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install && pnpm migrate -- --seed
+    startCommand: pnpm start
+    envVars:
+      - key: PGSSL
+        value: 'true'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bla-policy-db
+          property: connectionString
+
+databases:
+  - name: bla-policy-db
+    plan: free
+    databaseName: bla_policy
+    user: bla
