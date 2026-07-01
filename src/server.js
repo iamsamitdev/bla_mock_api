@@ -49,7 +49,8 @@ router.post(
       `SELECT token,
               user_id      AS id,
               display_name AS "displayName",
-              role
+              role,
+              phone
          FROM users
         WHERE username = $1 AND password = $2`,
       [username, password],
@@ -57,8 +58,8 @@ router.post(
     if (rows.length === 0) {
       return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' })
     }
-    const { token, id, displayName, role } = rows[0]
-    res.json({ token, user: { id, displayName, role } })
+    const { token, id, displayName, role, phone } = rows[0]
+    res.json({ token, user: { id, displayName, role, phone } })
   }),
 )
 
@@ -69,7 +70,7 @@ router.get(
   wrap(async (req, res) => {
     const token = req.headers.authorization.slice(7).trim()
     const { rows } = await query(
-      `SELECT user_id AS id, display_name AS "displayName", role
+      `SELECT user_id AS id, display_name AS "displayName", role, phone
          FROM users WHERE token = $1`,
       [token],
     )
@@ -94,13 +95,13 @@ router.post(
     const token = 'tok-' + Math.random().toString(36).slice(2, 12)
     const userId = 'C' + Math.floor(1000 + Math.random() * 9000)
     await query(
-      `INSERT INTO users (username, password, token, user_id, display_name, role)
-       VALUES ($1,$2,$3,$4,$5,'customer')`,
-      [email, password, token, userId, name],
+      `INSERT INTO users (username, password, token, user_id, display_name, role, phone)
+       VALUES ($1,$2,$3,$4,$5,'customer',$6)`,
+      [email, password, token, userId, name, phone ?? null],
     )
     res.status(201).json({
       token,
-      user: { id: userId, displayName: name, role: 'customer' },
+      user: { id: userId, displayName: name, role: 'customer', phone: phone ?? null },
     })
   }),
 )
@@ -132,6 +133,63 @@ router.post(
       return res.status(404).json({ message: 'ไม่พบบัญชีอีเมลนี้' })
     }
     res.json({ message: 'ตั้งรหัสผ่านใหม่สำเร็จ' })
+  }),
+)
+
+// PUT /v1/auth/me → แก้ไขข้อมูลส่วนตัว (displayName / phone) จาก Bearer token
+router.put(
+  '/auth/me',
+  requireAuth,
+  wrap(async (req, res) => {
+    const token = req.headers.authorization.slice(7).trim()
+    const { displayName, phone } = req.body ?? {}
+    if (!displayName || !displayName.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อ' })
+    }
+    const result = await query(
+      `UPDATE users SET display_name = $2, phone = $3 WHERE token = $1`,
+      [token, displayName.trim(), phone ?? null],
+    )
+    if (affected(result) === 0) {
+      return res.status(401).json({ message: 'token ไม่ถูกต้อง' })
+    }
+    const { rows } = await query(
+      `SELECT user_id AS id, display_name AS "displayName", role, phone
+         FROM users WHERE token = $1`,
+      [token],
+    )
+    res.json(rows[0])
+  }),
+)
+
+// POST /v1/auth/change-password → เปลี่ยนรหัสผ่าน (ตรวจรหัสเดิม) จาก Bearer token
+router.post(
+  '/auth/change-password',
+  requireAuth,
+  wrap(async (req, res) => {
+    const token = req.headers.authorization.slice(7).trim()
+    const { currentPassword, newPassword } = req.body ?? {}
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'กรอกรหัสผ่านเดิมและรหัสผ่านใหม่ให้ครบ' })
+    }
+    if (String(newPassword).length < 4) {
+      return res.status(400).json({ message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร' })
+    }
+    const { rows } = await query(
+      `SELECT password FROM users WHERE token = $1`,
+      [token],
+    )
+    if (rows.length === 0) {
+      return res.status(401).json({ message: 'token ไม่ถูกต้อง' })
+    }
+    if (rows[0].password !== currentPassword) {
+      return res.status(400).json({ message: 'รหัสผ่านเดิมไม่ถูกต้อง' })
+    }
+    await query(
+      `UPDATE users SET password = $2 WHERE token = $1`,
+      [token, newPassword],
+    )
+    res.json({ message: 'เปลี่ยนรหัสผ่านสำเร็จ' })
   }),
 )
 

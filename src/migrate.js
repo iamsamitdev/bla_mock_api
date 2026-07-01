@@ -26,7 +26,8 @@ const CREATE_STATEMENTS = [
       token        TEXT NOT NULL,
       user_id      TEXT NOT NULL,
       display_name TEXT NOT NULL,
-      role         TEXT NOT NULL
+      role         TEXT NOT NULL,
+      phone        TEXT
    )`,
   `CREATE TABLE IF NOT EXISTS policies (
       id            TEXT PRIMARY KEY,
@@ -53,13 +54,13 @@ const CREATE_STATEMENTS = [
 async function seed() {
   for (const u of users) {
     await query(
-      `INSERT INTO users (username, password, token, user_id, display_name, role)
-       VALUES ($1,$2,$3,$4,$5,$6)
+      `INSERT INTO users (username, password, token, user_id, display_name, role, phone)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
        ON CONFLICT (username) DO UPDATE
          SET password = EXCLUDED.password, token = EXCLUDED.token,
              user_id = EXCLUDED.user_id, display_name = EXCLUDED.display_name,
-             role = EXCLUDED.role`,
-      [u.username, u.password, u.token, u.user.id, u.user.displayName, u.user.role],
+             role = EXCLUDED.role, phone = EXCLUDED.phone`,
+      [u.username, u.password, u.token, u.user.id, u.user.displayName, u.user.role, u.user.phone ?? null],
     )
   }
 

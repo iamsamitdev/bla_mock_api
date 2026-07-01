@@ -12,6 +12,18 @@ export const users = [
       id: 'C001',
       displayName: 'คุณสมชาย ใจดี',
       role: 'customer',
+      phone: '081-234-5678',
+    },
+  },
+  {
+    username: 'agent',
+    password: '1234',
+    token: 'mock-token-def456',
+    user: {
+      id: 'A001',
+      displayName: 'นายสมปอง ตัวแทน',
+      role: 'agent',
+      phone: '089-876-5432',
     },
   },
 ]
@@ -47,6 +59,13 @@ export const policies = [
     premium: 36000,
     status: 'active',
   },
+  {
+    id: 'P005',
+    planName: 'BLA ประกันชีวิต 20/10',
+    policyNumber: 'BLA-2569-0005',
+    premium: 42000,
+    status: 'active',
+  }
 ]
 
 // ClaimRecord: { claimRef, policyNumber, amount, status, submittedAt }
@@ -69,6 +88,20 @@ export const claims = [
     amount: 5400,
     status: 'approved',
     submittedAt: daysAgo(18),
+  },
+  {
+    claimRef: 'CLM-100212',
+    policyNumber: 'BLA-2569-0004',
+    amount: 8000,
+    status: 'rejected',
+    submittedAt: daysAgo(30),
+  },
+  {
+    claimRef: 'CLM-100198',
+    policyNumber: 'BLA-2569-0005',
+    amount: 15000,
+    status: 'submitted',
+    submittedAt: daysAgo(1),
   },
 ]
 
