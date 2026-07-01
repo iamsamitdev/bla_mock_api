@@ -51,6 +51,12 @@ const CREATE_STATEMENTS = [
    )`,
 ]
 
+// เผื่อกรณีตาราง users ถูกสร้างไว้ก่อนหน้านี้โดยไม่มีคอลัมน์ phone
+// (CREATE TABLE IF NOT EXISTS จะไม่เพิ่มคอลัมน์ให้ตารางที่มีอยู่แล้ว)
+const ALTER_STATEMENTS = [
+  'ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT',
+]
+
 async function seed() {
   for (const u of users) {
     await query(
@@ -102,6 +108,8 @@ async function main() {
   }
   for (const sql of CREATE_STATEMENTS) await query(sql)
   console.log('✅ สร้างตารางเรียบร้อย')
+  for (const sql of ALTER_STATEMENTS) await query(sql)
+  console.log('✅ ปรับโครงสร้างตารางเรียบร้อย')
   if (doSeed) await seed()
   await pool.end()
   console.log('🎉 เสร็จสิ้น')
