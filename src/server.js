@@ -79,6 +79,62 @@ router.get(
   }),
 )
 
+// POST /v1/auth/register → สมัครสมาชิก (ใช้ email เป็น username) → { token, user }
+router.post(
+  '/auth/register',
+  wrap(async (req, res) => {
+    const { name, email, phone, password } = req.body ?? {}
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'กรอกชื่อ อีเมล และรหัสผ่านให้ครบ' })
+    }
+    const exists = await query('SELECT 1 FROM users WHERE username = $1', [email])
+    if (exists.rows.length > 0) {
+      return res.status(409).json({ message: 'อีเมลนี้ถูกใช้สมัครแล้ว' })
+    }
+    const token = 'tok-' + Math.random().toString(36).slice(2, 12)
+    const userId = 'C' + Math.floor(1000 + Math.random() * 9000)
+    await query(
+      `INSERT INTO users (username, password, token, user_id, display_name, role)
+       VALUES ($1,$2,$3,$4,$5,'customer')`,
+      [email, password, token, userId, name],
+    )
+    res.status(201).json({
+      token,
+      user: { id: userId, displayName: name, role: 'customer' },
+    })
+  }),
+)
+
+// POST /v1/auth/forgot-password → ขอรีเซ็ตรหัสผ่าน (จำลองส่งลิงก์ทางอีเมล)
+router.post(
+  '/auth/forgot-password',
+  wrap(async (req, res) => {
+    const { email } = req.body ?? {}
+    if (!email) return res.status(400).json({ message: 'กรุณากรอกอีเมล' })
+    // ไม่เปิดเผยว่าอีเมลมีในระบบหรือไม่ (ความปลอดภัย) — ตอบสำเร็จเสมอ
+    res.json({ message: 'หากอีเมลนี้มีในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านให้แล้ว' })
+  }),
+)
+
+// POST /v1/auth/reset-password → ตั้งรหัสผ่านใหม่ (จำลอง: อ้างอิงด้วยอีเมล)
+router.post(
+  '/auth/reset-password',
+  wrap(async (req, res) => {
+    const { email, password } = req.body ?? {}
+    if (!email || !password) {
+      return res.status(400).json({ message: 'กรอกอีเมลและรหัสผ่านใหม่ให้ครบ' })
+    }
+    const result = await query(
+      'UPDATE users SET password = $2 WHERE username = $1',
+      [email, password],
+    )
+    if (affected(result) === 0) {
+      return res.status(404).json({ message: 'ไม่พบบัญชีอีเมลนี้' })
+    }
+    res.json({ message: 'ตั้งรหัสผ่านใหม่สำเร็จ' })
+  }),
+)
+
 // ---------- Policies (CRUD) ----------
 const policySelect = `
   SELECT id,

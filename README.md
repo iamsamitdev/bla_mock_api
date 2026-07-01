@@ -44,6 +44,9 @@ bla_mock_api/
 | Method | Path | คำอธิบาย |
 |--------|------|----------|
 | POST   | `/v1/auth/login` | เข้าสู่ระบบ → `{ token, user }` |
+| POST   | `/v1/auth/register` | สมัครสมาชิก (email = username) → `{ token, user }` |
+| POST   | `/v1/auth/forgot-password` | ขอลิงก์รีเซ็ตรหัสผ่าน (จำลอง) → `{ message }` |
+| POST   | `/v1/auth/reset-password` | ตั้งรหัสผ่านใหม่ (อ้างอิงด้วย email) → `{ message }` |
 | GET    | `/v1/policies` | รายการกรมธรรม์ (รองรับ `?status=active`) |
 | GET    | `/v1/policies/:id` | กรมธรรม์รายตัว |
 | POST   | `/v1/policies` | เพิ่มกรมธรรม์ |
